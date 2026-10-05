@@ -1,0 +1,94 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { clearCart, getCartItems, type CartItem } from '@/lib/cart';
+
+export function CheckoutPanel() {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  useEffect(() => {
+    setItems(getCartItems());
+  }, []);
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = items.length > 0 ? 25 : 0;
+  const total = subtotal + shipping;
+
+  const completeOrder = () => {
+    if (!items.length) return;
+    setOrderPlaced(true);
+    clearCart();
+    setItems([]);
+  };
+
+  if (orderPlaced) {
+    return (
+      <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-8 text-center">
+        <div className="text-5xl">✅</div>
+        <h2 className="mt-5 text-3xl font-black text-emerald-800">تم تأكيد الطلب بنجاح</h2>
+        <p className="mt-3 text-emerald-700">سيتم التواصل معك لتأكيد تفاصيل الشحن خلال 24 ساعة.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-black text-slate-900">عربة التسوق</h2>
+
+        {items.length === 0 ? (
+          <div className="mt-8 rounded-2xl bg-slate-50 p-8 text-center text-slate-500">
+            السلة فارغة الآن، أضف بعض المنتجات لبدء التسوق.
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            {items.map((item) => (
+              <div key={`${item.id}-${item.size}`} className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
+                <div className="relative h-20 w-20 overflow-hidden rounded-2xl">
+                  <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-slate-900">{item.name}</div>
+                  <div className="mt-1 text-sm text-slate-500">المقاس: {item.size}</div>
+                  <div className="mt-2 text-sm font-medium text-brand-700">{item.price} ر.س</div>
+                </div>
+                <div className="text-sm font-bold text-slate-700">الكمية: {item.quantity}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-black text-slate-900">تفاصيل الطلب</h2>
+
+        <div className="mt-6 space-y-4">
+          <div className="rounded-2xl border border-slate-200 p-4">
+            <label className="block text-sm text-slate-500">الاسم الكامل</label>
+            <input defaultValue="سارة محمد" className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none" />
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-4">
+            <label className="block text-sm text-slate-500">رقم الهاتف</label>
+            <input defaultValue="0501234567" className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none" />
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-4">
+            <label className="block text-sm text-slate-500">العنوان</label>
+            <textarea defaultValue="الرياض - حي النرجس - شارع الملك" className="mt-2 min-h-[100px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none" />
+          </div>
+        </div>
+
+        <div className="mt-8 space-y-3 border-t border-slate-200 pt-6 text-sm text-slate-600">
+          <div className="flex items-center justify-between"><span>المجموع الفرعي</span><span>{subtotal} ر.س</span></div>
+          <div className="flex items-center justify-between"><span>الشحن</span><span>{shipping} ر.س</span></div>
+          <div className="flex items-center justify-between"><span>الخصم</span><span>0 ر.س</span></div>
+          <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-lg font-black text-slate-900"><span>الإجمالي</span><span>{total} ر.س</span></div>
+        </div>
+
+        <button onClick={completeOrder} disabled={!items.length} className="mt-8 w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300">
+          تأكيد الطلب
+        </button>
+      </div>
+    </div>
+  );
+}
